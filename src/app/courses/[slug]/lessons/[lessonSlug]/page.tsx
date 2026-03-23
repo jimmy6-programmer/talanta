@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { CompleteButton } from '@/components/CompleteButton'
 import { CodeEditor } from '@/components/CodeEditor'
 import TradingChart from '@/components/TradingChart'
+import TestComponent from '@/components/TestComponent'
 
 // Static course data for testing (will replace with DB data when available)
 const staticCourses = {
@@ -437,19 +438,27 @@ export default async function LessonPage({
   // Try to get data from database first
   const { data: course } = await supabase
     .from('courses')
-    .select('*, lessons(*)')
+    .select(`
+      *,
+      course_sections(
+        *,
+        lessons(*)
+      )
+    `)
     .eq('slug', slug)
     .single()
 
   // Fallback to static data if not in database
   let lesson: any
   let sortedLessons: any[]
-  
+
   if (course) {
-    lesson = course.lessons?.find((l: any) => l.slug === lessonSlug)
+    // Flatten lessons from all sections
+    const allLessons = course.course_sections?.flatMap((section: any) => section.lessons || []) || []
+    lesson = allLessons.find((l: any) => l.slug === lessonSlug)
     if (!lesson) notFound()
 
-    sortedLessons = course.lessons?.sort((a: any, b: any) => a.order_index - b.order_index)
+    sortedLessons = allLessons.sort((a: any, b: any) => a.order_index - b.order_index)
   } else {
     // Check if we have static data for this course
     const staticCourse = staticCourses[slug as keyof typeof staticCourses]
@@ -528,10 +537,10 @@ export default async function LessonPage({
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1">
-          <div className={`flex flex-col ${lesson.showIDE || lesson.type === 'chart' ? 'md:flex-row' : 'flex-col'}`}>
+        <div className="flex-1 overflow-hidden">
+          <div className={`flex h-full ${lesson.show_ide || lesson.type === 'chart' ? 'flex-col lg:flex-row' : 'flex-col'}`}>
             {/* Left Column: Video & Content */}
-            <div className={`${lesson.showIDE || lesson.type === 'chart' ? 'md:w-1/2' : 'w-full'}`}>
+            <div className={`${lesson.show_ide || lesson.type === 'chart' ? 'w-full lg:w-1/2 lg:pr-3' : 'w-full'}`}>
               {/* Video Player */}
               <div className="aspect-video w-full bg-zinc-900 relative overflow-hidden group">
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -541,7 +550,7 @@ export default async function LessonPage({
                       <Play className="w-10 h-10 text-neon-green group-hover:text-deep-black fill-current ml-1" />
                     </div>
                     <p className="text-[10px] font-black italic tracking-[0.5em] text-neon-green/50">
-                      {lesson.type === 'chart' ? 'CHART ANALYSIS...' : 'STREAM DECODING...'}
+                      {lesson.type === 'chart' ? 'CHART ANALYSIS...' : lesson.show_ide ? 'CODE EXECUTION...' : 'STREAM DECODING...'}
                     </p>
                   </div>
                   
@@ -571,39 +580,64 @@ export default async function LessonPage({
               {/* Lesson Content */}
               <div className="p-6 md:p-12">
                 <div className="max-w-4xl mx-auto space-y-8">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                    <div className="space-y-2">
-                      <Badge variant="outline" className="text-[10px] font-black tracking-widest uppercase text-neon-green border-neon-green/30">
-                        LESSON {lesson.order_index || currentIdx + 1}
-                      </Badge>
-                      <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase">
-                        {lesson.title}
-                      </h1>
-                    </div>
-                    {course && (
-                      <CompleteButton 
-                        lessonId={lesson.id} 
-                        nextLessonSlug={nextLesson?.slug || null} 
-                        courseSlug={slug}
-                      />
-                    )}
+                  <div className="space-y-2">
+                    <Badge variant="outline" className="text-[10px] font-black tracking-widest uppercase text-neon-green border-neon-green/30">
+                      LESSON {lesson.order_index || currentIdx + 1}
+                    </Badge>
+                    <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase">
+                      {lesson.title}
+                    </h1>
                   </div>
 
                   <div className="prose prose-invert max-w-none prose-p:text-foreground/60 prose-headings:italic prose-headings:font-black">
                     <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
-                    
+
                     {lesson.exercise && (
                       <div className="mt-8 p-6 bg-zinc-900/50 border border-white/5 rounded-xl">
                         <h3 className="text-neon-green font-bold mb-4">Exercise</h3>
-                        <p className="mb-4">{lesson.exercise.question}</p>
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-bold text-foreground/70">Test Cases:</h4>
-                          {lesson.exercise.tests.map((test: any, index: number) => (
-                            <div key={index} className="text-xs bg-black/30 p-2 rounded">
-                              <code>Input: {test.input} → Output: {test.expected}</code>
-                            </div>
-                          ))}
-                        </div>
+                        {(() => {
+                          try {
+                            const exerciseData = typeof lesson.exercise === 'string' ? JSON.parse(lesson.exercise) : lesson.exercise;
+                            return (
+                              <>
+                                <p className="mb-4">{exerciseData?.question}</p>
+                                {exerciseData?.tests && exerciseData.tests.length > 0 && (
+                                  <div className="space-y-2">
+                                    <h4 className="text-sm font-bold text-foreground/70">Test Cases:</h4>
+                                    {exerciseData.tests.map((test: any, index: number) => (
+                                      <div key={index} className="text-xs bg-black/30 p-2 rounded">
+                                        <code>Input: {test.input} → Output: {test.expected}</code>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </>
+                            );
+                          } catch (error) {
+                            console.error('Error parsing exercise data:', error);
+                            return <p className="text-red-400">Error loading exercise data</p>;
+                          }
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Test Component */}
+                    <div className="mt-8">
+                      <TestComponent
+                        entityType="lesson"
+                        entityId={lesson.id}
+                        title={`${lesson.title} Test`}
+                      />
+                    </div>
+
+                    {/* Complete Button */}
+                    {course && (
+                      <div className="mt-8 flex justify-center">
+                        <CompleteButton
+                          lessonId={lesson.id}
+                          nextLessonSlug={nextLesson?.slug || null}
+                          courseSlug={slug}
+                        />
                       </div>
                     )}
                   </div>
@@ -611,10 +645,10 @@ export default async function LessonPage({
               </div>
             </div>
 
-            {/* Right Column: IDE or Chart (Conditionally Rendered) */}
-            {(lesson.showIDE || lesson.type === 'chart') && (
-              <div className="hidden md:block md:w-1/2 border-l border-white/5 bg-zinc-900">
-                {lesson.showIDE ? (
+              {/* Right Column: IDE or Chart (Conditionally Rendered) */}
+              {(lesson.show_ide || lesson.type === 'chart') && (
+                <div className="w-full lg:w-1/2 lg:pl-3 border-t lg:border-t-0 lg:border-l border-white/5 bg-zinc-900 mt-6 lg:mt-0 overflow-hidden">
+                {lesson.show_ide ? (
                   <div className="h-full flex flex-col">
                     <div className="bg-zinc-950 border-b border-white/5 px-4 py-2">
                       <h3 className="text-xs font-bold text-neon-green uppercase tracking-wider">
@@ -623,7 +657,7 @@ export default async function LessonPage({
                     </div>
                     <div className="flex-1">
                       <CodeEditor
-                        initialCode={lesson.initialCode}
+                        initialCode={lesson.initial_code}
                         language={lesson.language}
                         title={`${lesson.title} - Code Editor`}
                         readOnly={false}
@@ -634,13 +668,13 @@ export default async function LessonPage({
                   <div className="h-full flex flex-col">
                     <div className="bg-zinc-950 border-b border-white/5 px-4 py-2">
                       <h3 className="text-xs font-bold text-neon-green uppercase tracking-wider">
-                        LIVE CHART - {lesson.chartData.symbol}
+                        LIVE CHART - {lesson.chart_data?.symbol}
                       </h3>
                     </div>
                     <div className="flex-1">
                       <TradingChart
-                        symbol={lesson.chartData.symbol}
-                        timeframe={lesson.chartData.timeframe}
+                        symbol={lesson.chart_data?.symbol}
+                        timeframe={lesson.chart_data?.timeframe}
                         height={700}
                       />
                     </div>

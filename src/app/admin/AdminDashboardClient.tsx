@@ -37,7 +37,8 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
-  MapPin
+  MapPin,
+  MessageSquare
 } from 'lucide-react';
 // import Globe from '@/components/Globe';
 import { Button } from '@/components/ui/button';
@@ -56,6 +57,7 @@ import AdminCoursesPage from './courses/page';
 import AdminCountriesPage from './countries/page';
 import AdminAnalyticsPage from './analytics/page';
 import AdminSystemStatusPage from './system-status/page';
+import CommunityPage from '../community/page';
 
 // Mock data for charts
 const monthlyData = [
@@ -217,7 +219,7 @@ const AdminDashboardClient = () => {
 
         {/* Navigation Tabs */}
         <Tabs defaultValue="dashboard" className="mb-8">
-          <TabsList className="grid grid-cols-2 md:grid-cols-7 gap-2">
+          <TabsList className="grid grid-cols-2 md:grid-cols-8 gap-2">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <Activity className="w-4 h-4" />
               Dashboard
@@ -245,6 +247,10 @@ const AdminDashboardClient = () => {
             <TabsTrigger value="system-status" className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               System Status
+            </TabsTrigger>
+            <TabsTrigger value="community" className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Community
             </TabsTrigger>
           </TabsList>
 
@@ -616,6 +622,11 @@ const AdminDashboardClient = () => {
           {/* System Status Tab Content */}
           <TabsContent value="system-status">
             <AdminSystemStatusPage />
+          </TabsContent>
+
+          {/* Community Tab Content */}
+          <TabsContent value="community">
+            <CommunityPage />
           </TabsContent>
         </Tabs>
       </main>

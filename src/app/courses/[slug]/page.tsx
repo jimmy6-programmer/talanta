@@ -88,7 +88,14 @@ export default async function CourseDetailsPage({
   // Try to get data from database first
   const { data: course } = await supabase
     .from('courses')
-    .select('*, categories(name), lessons(*), course_sections(*)')
+    .select(`
+      *,
+      categories(name, slug),
+      course_sections(
+        *,
+        lessons(*)
+      )
+    `)
     .eq('slug', slug)
     .single()
 
@@ -104,36 +111,27 @@ export default async function CourseDetailsPage({
     displayCourse = staticCourse
   }
 
-  // Group lessons by section
-  // For static data, we'll assign lessons to sections based on their index
+  // For DB data, sections already have lessons nested
   let sectionsWithLessons = []
-  if (displayCourse.course_sections) {
+  if (displayCourse.course_sections && displayCourse.course_sections.length > 0) {
     sectionsWithLessons = displayCourse.course_sections
-      ?.sort((a: any, b: any) => a.order_index - b.order_index)
-      .map((section: any, sectionIndex: number) => ({
+      .sort((a: any, b: any) => a.order_index - b.order_index)
+      .map((section: any) => ({
         ...section,
-        lessons: displayCourse.lessons
-          ?.filter((lesson: any) => {
-            // For static data, assign lessons to sections based on their index
-            if (displayCourse.course_sections && !('section_id' in lesson)) {
-              const lessonsPerSection = Math.ceil(displayCourse.lessons.length / displayCourse.course_sections.length)
-              const lessonIndex = displayCourse.lessons.findIndex((l: any) => l.id === lesson.id)
-              return Math.floor(lessonIndex / lessonsPerSection) === sectionIndex
-            }
-            return lesson.section_id === section.id
-          })
-          .sort((a: any, b: any) => (a.order_index || a.id) - (b.order_index || b.id)) || []
-      })) || []
-  } else {
-    // If no sections defined, create a default section
+        lessons: section.lessons?.sort((a: any, b: any) => (a.order_index || a.id) - (b.order_index || b.id)) || []
+      }))
+  } else if (displayCourse.lessons) {
+    // Fallback for static data or old structure
     sectionsWithLessons = [
       {
         id: 1,
         title: 'Course Content',
         order_index: 1,
-        lessons: displayCourse.lessons?.sort((a: any, b: any) => (a.order_index || a.id) - (b.order_index || b.id)) || []
+        lessons: displayCourse.lessons.sort((a: any, b: any) => (a.order_index || a.id) - (b.order_index || b.id))
       }
     ]
+  } else {
+    sectionsWithLessons = []
   }
 
   return (

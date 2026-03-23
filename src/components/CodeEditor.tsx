@@ -341,12 +341,12 @@ export function CodeEditor({
             {/* Monaco Editor */}
             <div className="flex-1">
               <MonacoEditor
-                height={isMaximized ? 'calc(100vh - 300px)' : '100%'}
+                height={isMaximized ? 'calc(100vh - 180px)' : '100%'}
                 language={language}
                 value={code}
                 onChange={(value) => setCode(value || '')}
                 theme={theme === 'dark' ? 'vs-dark' : 'vs'}
-                options={{ 
+                options={{
                   minimap: { enabled: false },
                   fontSize: fontSize === 'sm' ? 12 : fontSize === 'lg' ? 16 : 14,
                   lineNumbers: showLineNumbers ? 'on' : 'off',
@@ -385,13 +385,13 @@ export function CodeEditor({
               )}
             </div>
             
-            <div 
+            <div
               className={cn(
                 "p-4 font-mono text-sm overflow-y-auto",
                 theme === 'dark' ? 'bg-black text-green-400' : 'bg-gray-900 text-green-300'
               )}
-              style={{ 
-                height: isMaximized ? 'calc(100vh - 300px)' : '100%'
+              style={{
+                height: isMaximized ? 'calc(100vh - 180px)' : '100%'
               }}
             >
               {output.length === 0 ? (
@@ -433,13 +433,13 @@ export function CodeEditor({
                   Live Preview
                 </span>
               </div>
-              <div 
+              <div
                 className={cn(
                   "flex-1",
                   theme === 'dark' ? 'bg-white' : 'bg-white'
                 )}
-                style={{ 
-                  height: isMaximized ? 'calc(100vh - 250px)' : '100%'
+                style={{
+                  height: isMaximized ? 'calc(100vh - 180px)' : '100%'
                 }}
               >
                 <iframe
