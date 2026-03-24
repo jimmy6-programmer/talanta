@@ -492,6 +492,12 @@ export default async function LessonPage({
   const currentIdx = sortedLessons?.findIndex((l: any) => l.slug === lessonSlug) || 0
   const nextLesson = sortedLessons?.[currentIdx + 1]
 
+  // Helper function to extract YouTube video ID
+  const getYouTubeVideoId = (url: string) => {
+    const match = url.match(/[?&]v=([^#\&\?]*)/)
+    return match && match[1]
+  }
+
   return (
     <div className="min-h-screen bg-deep-black">
       <div className="flex flex-col md:flex-row">
@@ -542,39 +548,49 @@ export default async function LessonPage({
             {/* Left Column: Video & Content */}
             <div className={`${lesson.show_ide || lesson.type === 'chart' ? 'w-full lg:w-1/2 lg:pr-3' : 'w-full'}`}>
               {/* Video Player */}
-              <div className="aspect-video w-full bg-zinc-900 relative overflow-hidden group">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  {/* Mock video player interface */}
-                  <div className="w-full h-full flex items-center justify-center flex-col space-y-4">
-                    <div className="w-20 h-20 bg-neon-green/10 rounded-full flex items-center justify-center group-hover:bg-neon-green group-hover:scale-110 transition-all duration-500 cursor-pointer">
-                      <Play className="w-10 h-10 text-neon-green group-hover:text-deep-black fill-current ml-1" />
+              <div className="aspect-video w-full bg-zinc-900 relative overflow-hidden">
+                {lesson.video_url && getYouTubeVideoId(lesson.video_url) ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${getYouTubeVideoId(lesson.video_url)}`}
+                    title={lesson.title}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {/* Mock video player interface */}
+                    <div className="w-full h-full flex items-center justify-center flex-col space-y-4">
+                      <div className="w-20 h-20 bg-neon-green/10 rounded-full flex items-center justify-center group-hover:bg-neon-green group-hover:scale-110 transition-all duration-500 cursor-pointer">
+                        <Play className="w-10 h-10 text-neon-green group-hover:text-deep-black fill-current ml-1" />
+                      </div>
+                      <p className="text-[10px] font-black italic tracking-[0.5em] text-neon-green/50">
+                        {lesson.type === 'chart' ? 'CHART ANALYSIS...' : lesson.show_ide ? 'CODE EXECUTION...' : 'STREAM DECODING...'}
+                      </p>
                     </div>
-                    <p className="text-[10px] font-black italic tracking-[0.5em] text-neon-green/50">
-                      {lesson.type === 'chart' ? 'CHART ANALYSIS...' : lesson.show_ide ? 'CODE EXECUTION...' : 'STREAM DECODING...'}
-                    </p>
-                  </div>
-                  
-                  {/* Controls Overlay (Mock) */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <Play className="w-4 h-4 text-white" />
-                        <div className="w-32 md:w-64 h-1 bg-white/20 rounded-full relative overflow-hidden">
-                          <div className="absolute top-0 left-0 h-full w-1/3 bg-neon-green" />
+
+                    {/* Controls Overlay (Mock) */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <Play className="w-4 h-4 text-white" />
+                          <div className="w-32 md:w-64 h-1 bg-white/20 rounded-full relative overflow-hidden">
+                            <div className="absolute top-0 left-0 h-full w-1/3 bg-neon-green" />
+                          </div>
+                          <span className="text-[10px] font-bold text-white">10:30 / {Math.floor(lesson.duration / 60)}:{String(lesson.duration % 60).padStart(2, '0')}</span>
                         </div>
-                        <span className="text-[10px] font-bold text-white">10:30 / {Math.floor(lesson.duration / 60)}:{String(lesson.duration % 60).padStart(2, '0')}</span>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <Button variant="ghost" size="sm" className="text-white hover:text-neon-green text-[10px] font-bold tracking-widest">
-                          1.0X
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-white hover:text-neon-green text-[10px] font-bold tracking-widest">
-                          1080P SYS
-                        </Button>
+                        <div className="flex items-center space-x-4">
+                          <Button variant="ghost" size="sm" className="text-white hover:text-neon-green text-[10px] font-bold tracking-widest">
+                            1.0X
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-white hover:text-neon-green text-[10px] font-bold tracking-widest">
+                            1080P SYS
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Lesson Content */}

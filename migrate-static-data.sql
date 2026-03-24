@@ -9,7 +9,7 @@ SELECT
   'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=600&fit=crop',
   299.00,
   'Beginner',
-  (SELECT id FROM categories WHERE slug = 'web-development'),
+  (SELECT id FROM categories WHERE slug = 'web-development' LIMIT 1),
   TRUE
 WHERE NOT EXISTS (SELECT 1 FROM courses WHERE slug = 'web-development');
 
@@ -21,7 +21,7 @@ SELECT
   'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop',
   349.00,
   'Intermediate',
-  (SELECT id FROM categories WHERE slug = 'data-science'),
+  (SELECT id FROM categories WHERE slug = 'data-science' LIMIT 1),
   TRUE
 WHERE NOT EXISTS (SELECT 1 FROM courses WHERE slug = 'data-science');
 
@@ -33,33 +33,25 @@ SELECT
   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop',
   249.00,
   'Advanced',
-  (SELECT id FROM categories WHERE slug = 'finance'),
+  (SELECT id FROM categories WHERE slug = 'finance' LIMIT 1),
   TRUE
 WHERE NOT EXISTS (SELECT 1 FROM courses WHERE slug = 'forex-trading');
 
 -- Insert course sections (topics)
-INSERT INTO course_sections (course_id, title, order_index)
-SELECT id, 'HTML Fundamentals', 1 FROM courses WHERE slug = 'web-development'
-UNION ALL
-SELECT id, 'CSS Styling', 2 FROM courses WHERE slug = 'web-development'
-UNION ALL
-SELECT id, 'JavaScript Programming', 3 FROM courses WHERE slug = 'web-development'
-UNION ALL
-SELECT id, 'Data Science Basics', 1 FROM courses WHERE slug = 'data-science'
-UNION ALL
-SELECT id, 'Python Programming', 2 FROM courses WHERE slug = 'data-science'
-UNION ALL
-SELECT id, 'Data Analysis', 3 FROM courses WHERE slug = 'data-science'
-UNION ALL
-SELECT id, 'Forex Basics', 1 FROM courses WHERE slug = 'forex-trading'
-UNION ALL
-SELECT id, 'Market Analysis', 2 FROM courses WHERE slug = 'forex-trading'
-UNION ALL
-SELECT id, 'Trading Strategies', 3 FROM courses WHERE slug = 'forex-trading';
+INSERT INTO course_sections (course_id, title, order_index) VALUES
+((SELECT id FROM courses WHERE slug = 'web-development' LIMIT 1), 'HTML Fundamentals', 1),
+((SELECT id FROM courses WHERE slug = 'web-development' LIMIT 1), 'CSS Styling', 2),
+((SELECT id FROM courses WHERE slug = 'web-development' LIMIT 1), 'JavaScript Programming', 3),
+((SELECT id FROM courses WHERE slug = 'data-science' LIMIT 1), 'Data Science Basics', 1),
+((SELECT id FROM courses WHERE slug = 'data-science' LIMIT 1), 'Python Programming', 2),
+((SELECT id FROM courses WHERE slug = 'data-science' LIMIT 1), 'Data Analysis', 3),
+((SELECT id FROM courses WHERE slug = 'forex-trading' LIMIT 1), 'Forex Basics', 1),
+((SELECT id FROM courses WHERE slug = 'forex-trading' LIMIT 1), 'Market Analysis', 2),
+((SELECT id FROM courses WHERE slug = 'forex-trading' LIMIT 1), 'Trading Strategies', 3);
 
 -- Insert lessons (subtopics)
 INSERT INTO lessons (section_id, title, slug, order_index, is_preview, duration, type, content, show_ide, initial_code, language, exercise) VALUES
-((SELECT id FROM course_sections WHERE title = 'HTML Fundamentals'), 'Introduction to HTML', 'introduction-to-html', 1, TRUE, 300, 'exercise',
+((SELECT id FROM course_sections WHERE title = 'HTML Fundamentals' LIMIT 1), 'Introduction to HTML', 'introduction-to-html', 1, TRUE, 300, 'exercise',
  '<h3>What is HTML?</h3>
  <p>HTML (HyperText Markup Language) is the standard markup language for creating web pages and web applications. It describes the structure of a web page semantically and originally included cues for the appearance of the document.</p>
  <h3>Basic HTML Structure</h3>
@@ -116,7 +108,7 @@ INSERT INTO lessons (section_id, title, slug, order_index, is_preview, duration,
     </div>
 </body>
 </html>', 'html', '{"question": "Create an HTML page with a header, main content area, and footer", "tests": [{"input": "Check for header tag", "expected": "Header element exists"}, {"input": "Check for main content", "expected": "Main content area exists"}, {"input": "Check for footer", "expected": "Footer element exists"}]}'),
-((SELECT id FROM course_sections WHERE title = 'CSS Styling'), 'CSS Fundamentals', 'css-fundamentals', 1, TRUE, 360, 'exercise',
+((SELECT id FROM course_sections WHERE title = 'CSS Styling' LIMIT 1), 'CSS Fundamentals', 'css-fundamentals', 1, TRUE, 360, 'exercise',
  '<h3>What is CSS?</h3>
  <p>CSS (Cascading Style Sheets) is a stylesheet language used to describe the presentation of a document written in HTML or XML. CSS describes how elements should be rendered on screen, paper, or in other media.</p>
  <h3>CSS Syntax</h3>
@@ -185,7 +177,7 @@ h1 {
         font-size: 1.5em;
     }
 }', 'css', '{"question": "Create a CSS class that styles a button with hover effects", "tests": [{"input": "Check button background color", "expected": "Button has blue background"}, {"input": "Check hover effect", "expected": "Button darkens on hover"}, {"input": "Check border radius", "expected": "Button has rounded corners"}]}'),
-((SELECT id FROM course_sections WHERE title = 'JavaScript Programming'), 'JavaScript Basics', 'javascript-basics', 1, TRUE, 420, 'exercise',
+((SELECT id FROM course_sections WHERE title = 'JavaScript Programming' LIMIT 1), 'JavaScript Basics', 'javascript-basics', 1, TRUE, 420, 'exercise',
  '<h3>What is JavaScript?</h3>
  <p>JavaScript is a programming language that allows you to implement complex features on web pages. It enables interactive web pages and is an essential part of web applications.</p>
  <h3>Variables and Data Types</h3>
@@ -245,9 +237,9 @@ document.addEventListener(''DOMContentLoaded'', function() {
         container.appendChild(newElement);
     });
 });', 'javascript', '{"question": "Create a function that reverses a string", "tests": [{"input": "hello", "expected": "olleh"}, {"input": "JavaScript", "expected": "tpircSavaJ"}, {"input": "", "expected": ""}]}'),
-((SELECT id FROM course_sections WHERE title = 'JavaScript Programming'), 'Advanced JavaScript Concepts', 'advanced-javascript', 2, FALSE, 480, 'exercise', '<h3>Advanced JavaScript Concepts</h3><p>Deep dive into closures, prototypes, and async programming.</p>', TRUE, '// Advanced JavaScript\nconsole.log("Advanced concepts");', 'javascript', '{"question": "Implement a closure", "tests": [{"input": "test", "expected": "closure works"}]}'),
-((SELECT id FROM course_sections WHERE title = 'JavaScript Programming'), 'DOM Manipulation', 'dom-manipulation', 3, FALSE, 390, 'exercise', '<h3>DOM Manipulation</h3><p>Learn to manipulate the Document Object Model.</p>', TRUE, '// DOM manipulation\nconsole.log("DOM code");', 'javascript', '{"question": "Create and append an element", "tests": [{"input": "div", "expected": "element created"}]}'),
-((SELECT id FROM course_sections WHERE title = 'Data Science Basics'), 'Introduction to Data Science', 'data-science-intro', 1, TRUE, 300, 'exercise',
+((SELECT id FROM course_sections WHERE title = 'JavaScript Programming' LIMIT 1), 'Advanced JavaScript Concepts', 'advanced-javascript', 2, FALSE, 480, 'exercise', '<h3>Advanced JavaScript Concepts</h3><p>Deep dive into closures, prototypes, and async programming.</p>', TRUE, '// Advanced JavaScript\nconsole.log("Advanced concepts");', 'javascript', '{"question": "Implement a closure", "tests": [{"input": "test", "expected": "closure works"}]}'),
+((SELECT id FROM course_sections WHERE title = 'JavaScript Programming' LIMIT 1), 'DOM Manipulation', 'dom-manipulation', 3, FALSE, 390, 'exercise', '<h3>DOM Manipulation</h3><p>Learn to manipulate the Document Object Model.</p>', TRUE, '// DOM manipulation\nconsole.log("DOM code");', 'javascript', '{"question": "Create and append an element", "tests": [{"input": "div", "expected": "element created"}]}'),
+((SELECT id FROM course_sections WHERE title = 'Data Science Basics' LIMIT 1), 'Introduction to Data Science', 'data-science-intro', 1, TRUE, 300, 'exercise',
  '<h3>What is Data Science?</h3>
  <p>Data Science is an interdisciplinary field that uses scientific methods, processes, algorithms, and systems to extract knowledge and insights from structured and unstructured data.</p>
  <h3>Key Components</h3>
@@ -324,11 +316,11 @@ print(f"R-squared Score: {r2:.2f}")
 # Coefficients
 print("\\nModel Coefficients:")
 print(pd.DataFrame({''Feature'': X.columns, ''Coefficient'': model.coef_}))', 'python', '{"question": "Write a Python function to calculate the mean, median, and standard deviation of a dataset", "tests": [{"input": "[1, 2, 3, 4, 5]", "expected": "Mean: 3, Median: 3, Std: 1.41"}, {"input": "[10, 20, 30, 40, 50]", "expected": "Mean: 30, Median: 30, Std: 14.14"}, {"input": "[5, 5, 5, 5, 5]", "expected": "Mean: 5, Median: 5, Std: 0"}]}'),
-((SELECT id FROM course_sections WHERE title = 'Python Programming'), 'Python for Data Analysis', 'python-data-analysis', 1, FALSE, 360, 'exercise', '<h3>Python for Data Analysis</h3><p>Learn to use Python libraries for data manipulation.</p>', TRUE, '# Python data analysis\nprint("Data analysis")', 'python', '{"question": "Load and analyze CSV data", "tests": [{"input": "test.csv", "expected": "data loaded"}]}'),
-((SELECT id FROM course_sections WHERE title = 'Data Analysis'), 'Data Visualization', 'data-visualization', 1, FALSE, 420, 'exercise', '<h3>Data Visualization</h3><p>Create compelling visualizations with matplotlib and seaborn.</p>', TRUE, '# Data visualization\nprint("Visualization code")', 'python', '{"question": "Create a bar chart", "tests": [{"input": "data", "expected": "chart created"}]}'),
-((SELECT id FROM course_sections WHERE title = 'Data Analysis'), 'Statistical Analysis', 'statistical-analysis', 2, FALSE, 480, 'exercise', '<h3>Statistical Analysis</h3><p>Apply statistical methods to data.</p>', TRUE, '# Statistical analysis\nprint("Stats code")', 'python', '{"question": "Calculate correlation", "tests": [{"input": "dataset", "expected": "correlation calculated"}]}'),
-((SELECT id FROM course_sections WHERE title = 'Data Analysis'), 'Machine Learning Basics', 'machine-learning-basics', 3, FALSE, 390, 'exercise', '<h3>Machine Learning Basics</h3><p>Introduction to machine learning algorithms.</p>', TRUE, '# Machine learning\nprint("ML code")', 'python', '{"question": "Train a simple model", "tests": [{"input": "data", "expected": "model trained"}]}'),
-((SELECT id FROM course_sections WHERE title = 'Forex Basics'), 'Introduction to Forex Trading', 'forex-trading-intro', 1, TRUE, 240, 'chart',
+((SELECT id FROM course_sections WHERE title = 'Python Programming' LIMIT 1), 'Python for Data Analysis', 'python-data-analysis', 1, FALSE, 360, 'exercise', '<h3>Python for Data Analysis</h3><p>Learn to use Python libraries for data manipulation.</p>', TRUE, '# Python data analysis\nprint("Data analysis")', 'python', '{"question": "Load and analyze CSV data", "tests": [{"input": "test.csv", "expected": "data loaded"}]}'),
+((SELECT id FROM course_sections WHERE title = 'Data Analysis' LIMIT 1), 'Data Visualization', 'data-visualization', 1, FALSE, 420, 'exercise', '<h3>Data Visualization</h3><p>Create compelling visualizations with matplotlib and seaborn.</p>', TRUE, '# Data visualization\nprint("Visualization code")', 'python', '{"question": "Create a bar chart", "tests": [{"input": "data", "expected": "chart created"}]}'),
+((SELECT id FROM course_sections WHERE title = 'Data Analysis' LIMIT 1), 'Statistical Analysis', 'statistical-analysis', 2, FALSE, 480, 'exercise', '<h3>Statistical Analysis</h3><p>Apply statistical methods to data.</p>', TRUE, '# Statistical analysis\nprint("Stats code")', 'python', '{"question": "Calculate correlation", "tests": [{"input": "dataset", "expected": "correlation calculated"}]}'),
+((SELECT id FROM course_sections WHERE title = 'Data Analysis' LIMIT 1), 'Machine Learning Basics', 'machine-learning-basics', 3, FALSE, 390, 'exercise', '<h3>Machine Learning Basics</h3><p>Introduction to machine learning algorithms.</p>', TRUE, '# Machine learning\nprint("ML code")', 'python', '{"question": "Train a simple model", "tests": [{"input": "data", "expected": "model trained"}]}'),
+((SELECT id FROM course_sections WHERE title = 'Forex Basics' LIMIT 1), 'Introduction to Forex Trading', 'forex-trading-intro', 1, TRUE, 240, 'chart',
  '<h3>What is Forex Trading?</h3>
  <p>Forex (Foreign Exchange) trading involves buying and selling currencies with the aim of making a profit. The forex market is the largest and most liquid financial market in the world.</p>
  <h3>Key Concepts</h3>
@@ -340,29 +332,58 @@ print(pd.DataFrame({''Feature'': X.columns, ''Coefficient'': model.coef_}))', 'p
  </ul>
  <h3>Trading Hours</h3>
  <p>The forex market is open 24 hours a day, 5 days a week, with trading sessions overlapping across major financial centers.</p>', FALSE, NULL, NULL, '{"type": "candlestick", "symbol": "EUR/USD", "timeframe": "1H", "data": [{"time": "2024-01-01", "open": 1.0850, "high": 1.0860, "low": 1.0845, "close": 1.0855}, {"time": "2024-01-02", "open": 1.0855, "high": 1.0870, "low": 1.0850, "close": 1.0865}, {"time": "2024-01-03", "open": 1.0865, "high": 1.0875, "low": 1.0860, "close": 1.0870}, {"time": "2024-01-04", "open": 1.0870, "high": 1.0878, "low": 1.0865, "close": 1.0872}, {"time": "2024-01-05", "open": 1.0872, "high": 1.0880, "low": 1.0868, "close": 1.0875}, {"time": "2024-01-06", "open": 1.0875, "high": 1.0890, "low": 1.0870, "close": 1.0885}, {"time": "2024-01-07", "open": 1.0885, "high": 1.0900, "low": 1.0880, "close": 1.0895}, {"time": "2024-01-08", "open": 1.0895, "high": 1.0910, "low": 1.0885, "close": 1.0905}, {"time": "2024-01-09", "open": 1.0905, "high": 1.0920, "low": 1.0895, "close": 1.0915}, {"time": "2024-01-10", "open": 1.0915, "high": 1.0930, "low": 1.0900, "close": 1.0925}]}'),
-((SELECT id FROM course_sections WHERE title = 'Market Analysis'), 'Currency Pairs and Market Structure', 'currency-pairs', 1, FALSE, 300, 'lesson', '<h3>Currency Pairs</h3><p>Learn about major, minor, and exotic currency pairs.</p>', FALSE, NULL, NULL, NULL),
-((SELECT id FROM course_sections WHERE title = 'Market Analysis'), 'Technical Analysis Basics', 'technical-analysis', 2, FALSE, 360, 'lesson', '<h3>Technical Analysis</h3><p>Introduction to charts, indicators, and patterns.</p>', FALSE, NULL, NULL, NULL),
-((SELECT id FROM course_sections WHERE title = 'Trading Strategies'), 'Advanced Chart Patterns', 'advanced-chart-patterns', 1, FALSE, 420, 'lesson', '<h3>Chart Patterns</h3><p>Learn advanced chart patterns for trading.</p>', FALSE, NULL, NULL, NULL),
-((SELECT id FROM course_sections WHERE title = 'Trading Strategies'), 'Risk Management Strategies', 'risk-management', 2, FALSE, 390, 'lesson', '<h3>Risk Management</h3><p>Essential risk management techniques for traders.</p>', FALSE, NULL, NULL, NULL);
+((SELECT id FROM course_sections WHERE title = 'Market Analysis' LIMIT 1), 'Currency Pairs and Market Structure', 'currency-pairs', 1, FALSE, 300, 'lesson', '<h3>Currency Pairs</h3><p>Learn about major, minor, and exotic currency pairs.</p>', FALSE, NULL, NULL, NULL),
+((SELECT id FROM course_sections WHERE title = 'Market Analysis' LIMIT 1), 'Technical Analysis Basics', 'technical-analysis', 2, FALSE, 360, 'lesson', '<h3>Technical Analysis</h3><p>Introduction to charts, indicators, and patterns.</p>', FALSE, NULL, NULL, NULL),
+((SELECT id FROM course_sections WHERE title = 'Trading Strategies' LIMIT 1), 'Advanced Chart Patterns', 'advanced-chart-patterns', 1, FALSE, 420, 'lesson', '<h3>Chart Patterns</h3><p>Learn advanced chart patterns for trading.</p>', FALSE, NULL, NULL, NULL),
+((SELECT id FROM course_sections WHERE title = 'Trading Strategies' LIMIT 1), 'Risk Management Strategies', 'risk-management', 2, FALSE, 390, 'lesson', '<h3>Risk Management</h3><p>Essential risk management techniques for traders.</p>', FALSE, NULL, NULL, NULL);
 
 -- Add tool conditions for forex trading course (show trading chart)
 INSERT INTO tool_conditions (entity_type, entity_id, tool_id, enabled) VALUES
-('course', (SELECT id FROM courses WHERE slug = 'forex-trading'), (SELECT id FROM tools WHERE name = 'trading_chart'), TRUE);
+('course', (SELECT id FROM courses WHERE slug = 'forex-trading' LIMIT 1), (SELECT id FROM tools WHERE name = 'trading_chart' LIMIT 1), TRUE)
+ON CONFLICT (entity_type, entity_id, tool_id) DO NOTHING;
 
 -- Add tool conditions for web development (show code editor)
 INSERT INTO tool_conditions (entity_type, entity_id, tool_id, enabled) VALUES
-('course', (SELECT id FROM courses WHERE slug = 'web-development'), (SELECT id FROM tools WHERE name = 'code_editor'), TRUE);
+('course', (SELECT id FROM courses WHERE slug = 'web-development' LIMIT 1), (SELECT id FROM tools WHERE name = 'code_editor' LIMIT 1), TRUE)
+ON CONFLICT (entity_type, entity_id, tool_id) DO NOTHING;
 
 -- Sample tests (simplified)
 INSERT INTO tests (entity_type, entity_id, title, questions, passing_score) VALUES
-('section', (SELECT id FROM course_sections WHERE title = 'HTML Fundamentals'), 'HTML Fundamentals Test',
+('section', (SELECT id FROM course_sections WHERE title = 'HTML Fundamentals' LIMIT 1), 'HTML Fundamentals Test',
  '[{"question": "What does HTML stand for?", "options": ["HyperText Markup Language", "High Tech Modern Language", "Home Tool Markup Language"], "correct_answer_index": 0}]',
  70),
-('lesson', (SELECT id FROM lessons WHERE slug = 'javascript-basics'), 'JavaScript Basics Test',
+('lesson', (SELECT id FROM lessons WHERE slug = 'javascript-basics' LIMIT 1), 'JavaScript Basics Test',
  '[{"question": "What is JavaScript?", "options": ["A programming language", "A markup language", "A database"], "correct_answer_index": 0}]',
- 70);
+ 70)
+ON CONFLICT (entity_type, entity_id) DO NOTHING;
 
 -- Update existing courses that don't have thumbnail images
 UPDATE courses
 SET thumbnail_url = 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=600&fit=crop'
 WHERE thumbnail_url IS NULL OR thumbnail_url = '';
+
+-- Update video_url for course sections
+UPDATE course_sections
+SET video_url = 'https://www.youtube.com/watch?v=GxmfcnU3feo'
+WHERE course_id = (SELECT id FROM courses WHERE slug = 'web-development' LIMIT 1);
+
+UPDATE course_sections
+SET video_url = 'https://www.youtube.com/watch?v=Grkyhe2MQPA'
+WHERE course_id = (SELECT id FROM courses WHERE slug = 'data-science' LIMIT 1);
+
+UPDATE course_sections
+SET video_url = 'https://www.youtube.com/watch?v=5iEHsRja8u0&t=25s'
+WHERE course_id = (SELECT id FROM courses WHERE slug = 'forex-trading' LIMIT 1);
+
+-- Update video_url for lessons
+UPDATE lessons
+SET video_url = 'https://www.youtube.com/watch?v=GxmfcnU3feo'
+WHERE section_id IN (SELECT id FROM course_sections WHERE course_id = (SELECT id FROM courses WHERE slug = 'web-development' LIMIT 1));
+
+UPDATE lessons
+SET video_url = 'https://www.youtube.com/watch?v=Grkyhe2MQPA'
+WHERE section_id IN (SELECT id FROM course_sections WHERE course_id = (SELECT id FROM courses WHERE slug = 'data-science' LIMIT 1));
+
+UPDATE lessons
+SET video_url = 'https://www.youtube.com/watch?v=5iEHsRja8u0&t=25s'
+WHERE section_id IN (SELECT id FROM course_sections WHERE course_id = (SELECT id FROM courses WHERE slug = 'forex-trading' LIMIT 1));
